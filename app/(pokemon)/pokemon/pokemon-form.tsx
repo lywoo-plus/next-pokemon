@@ -1,5 +1,6 @@
 'use client';
 
+import { addPokemon } from '@/actions/pokemon';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,23 +17,15 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+  pokemonFormSchema,
+  type PokemonFormValues,
+} from '@/lib/validations/pokemon';
 import { useForm } from '@tanstack/react-form';
 import { ImagePlusIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import * as z from 'zod';
-
-const formSchema = z.object({
-  image: z
-    .file()
-    .refine((file) => file.type.startsWith('image/'), 'Please choose an image')
-    .nullable(),
-  name: z.string().min(1, 'Please enter a name'),
-  description: z.string().min(1, 'Please enter a description'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 export default function PokemonForm() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -68,27 +61,33 @@ export default function PokemonForm() {
       image: null,
       name: '',
       description: '',
-    } as FormValues,
+    } as PokemonFormValues,
     validators: {
-      onSubmit: formSchema,
+      onSubmit: pokemonFormSchema,
     },
     onSubmit: async (values) => {
       const formValues = values.value;
+      const imageUrl = formValues.image?.name;
 
-      // TODO: Simulate API call
-      console.log('🪲🪲🪲🪲🪲');
-      console.log(formValues);
-      console.log('🪲🪲🪲🪲🪲');
+      if (!imageUrl) {
+        toast.error('Please choose an image', {
+          position: 'top-center',
+        });
+        return;
+      }
 
       toast.promise(
-        new Promise<FormValues>((resolve) => {
-          setTimeout(() => resolve(formValues), 1000);
+        addPokemon({
+          imageUrl,
+          name: formValues.name,
+          description: formValues.description,
         }),
         {
           position: 'top-center',
           loading: 'Creating pokemon',
           success: (data) => {
-            return `${data.name} created`;
+            form.reset();
+            return `Pokemon: ${data.name} created`;
           },
           error: 'Error creating pokemon',
         },
