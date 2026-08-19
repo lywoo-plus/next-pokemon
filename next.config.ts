@@ -1,7 +1,13 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      new URL(
+        'https://next-pokemon-s3-bucket-627821643881-ap-southeast-2-an.s3.ap-southeast-2.amazonaws.com/**',
+      ),
+    ],
+  },
 };
 
 export default nextConfig;

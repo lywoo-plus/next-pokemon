@@ -122,7 +122,7 @@ export default function PokemonForm() {
   }
 
   return (
-    <Card className="w-sm">
+    <Card className="md:w-sm">
       <CardHeader>
         <CardTitle>Pokemon</CardTitle>
         <CardDescription>Who&apos;s that Pokemon?</CardDescription>

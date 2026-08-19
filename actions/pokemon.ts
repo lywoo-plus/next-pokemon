@@ -16,3 +16,10 @@ export async function addPokemon(input: AddPokemonInput) {
 
   return pokemon;
 }
+
+export async function listPokemons() {
+  await new Promise((resolve) => {
+    setTimeout(() => resolve(null), 1000);
+  });
+  return prisma.pokemon.findMany();
+}
