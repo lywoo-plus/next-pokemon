@@ -18,8 +18,9 @@ export async function addPokemon(input: AddPokemonInput) {
 }
 
 export async function listPokemons() {
-  await new Promise((resolve) => {
-    setTimeout(() => resolve(null), 1000);
+  return await prisma.pokemon.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
   });
-  return prisma.pokemon.findMany();
 }
