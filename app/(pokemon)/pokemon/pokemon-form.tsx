@@ -1,6 +1,7 @@
 'use client';
 
 import { addPokemon } from '@/actions/pokemon';
+import { createPresignedS3UploadUrl } from '@/actions/s3';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -67,9 +68,9 @@ export default function PokemonForm() {
     },
     onSubmit: async (values) => {
       const formValues = values.value;
-      const imageUrl = formValues.image?.name;
+      const image = formValues.image;
 
-      if (!imageUrl) {
+      if (!image) {
         toast.error('Please choose an image', {
           position: 'top-center',
         });
@@ -77,23 +78,48 @@ export default function PokemonForm() {
       }
 
       toast.promise(
-        addPokemon({
-          imageUrl,
-          name: formValues.name,
-          description: formValues.description,
-        }),
+        async () => {
+          const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
+            fileName: image.name,
+            fileType: image.type,
+          });
+
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: image,
+            headers: {
+              'Content-Type': image.type,
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error('Image upload failed');
+          }
+
+          return addPokemon({
+            imageUrl: publicUrl,
+            name: formValues.name,
+            description: formValues.description,
+          });
+        },
         {
           position: 'top-center',
-          loading: 'Creating pokemon',
+          loading: 'Uploading image',
           success: (data) => {
-            form.reset();
+            resetForm();
             return `Pokemon: ${data.name} created`;
           },
-          error: 'Error creating pokemon',
+          error: (e) => `Something went wrong ${e.message}`,
         },
       );
     },
   });
+
+  function resetForm() {
+    form.reset();
+    updateImagePreview(null);
+    setImageInputKey((key) => key + 1);
+  }
 
   return (
     <Card className="w-sm">
@@ -250,15 +276,7 @@ export default function PokemonForm() {
 
       <CardFooter>
         <Field orientation="horizontal">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              form.reset();
-              updateImagePreview(null);
-              setImageInputKey((key) => key + 1);
-            }}
-          >
+          <Button type="button" variant="outline" onClick={resetForm}>
             Reset
           </Button>
           <Button type="submit" form="pokemon-form">
