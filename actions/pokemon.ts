@@ -1,5 +1,6 @@
 'use server';
 
+import { deleteS3ObjectByPublicUrl } from '@/actions/s3';
 import { prisma } from '@/db/prisma';
 import {
   addPokemonSchema,
@@ -23,4 +24,20 @@ export async function listPokemons() {
       createdAt: 'desc',
     },
   });
+}
+
+export async function deletePokemon(id: number) {
+  const pokemon = await prisma.pokemon.delete({
+    where: {
+      id,
+    },
+  });
+
+  if (pokemon.imageUrl) {
+    await deleteS3ObjectByPublicUrl(pokemon.imageUrl);
+  }
+
+  revalidatePath('/pokemon');
+
+  return pokemon;
 }

@@ -32,11 +32,13 @@ import { Input } from './ui/input';
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[];
   data: TData[];
+  children?: React.ReactNode;
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
+  children,
 }: DataTableProps<TData>) {
   // Sorting
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -178,6 +180,8 @@ export function DataTable<TData extends RowData>({
           Next
         </Button>
       </div>
+
+      {children}
     </div>
   );
 }
