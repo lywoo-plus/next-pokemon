@@ -4,6 +4,7 @@ import {
   useTable,
   type ColumnDef,
   type ColumnFiltersState,
+  type ColumnVisibilityState,
   type RowData,
   type SortingState,
 } from '@tanstack/react-table';
@@ -20,6 +21,12 @@ import {
 import { useState } from 'react';
 import { features, type DataTableFeatures } from './data-table-features';
 import { Button } from './ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 import { Input } from './ui/input';
 
 interface DataTableProps<TData extends RowData> {
@@ -37,22 +44,33 @@ export function DataTable<TData extends RowData>({
   // Filtering
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
+  // Visibility
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibilityState>({});
+
+  // Row Selection
+  const [rowSelection, setRowSelection] = useState({});
+
   const table = useTable({
     features,
     data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
+      columnVisibility,
+      rowSelection,
     },
   });
 
   return (
-    <div>
+    <div className="space-y-3">
       {/* Filtering */}
-      <div className="mb-4 flex items-center">
+      <div className="mb-4 flex items-center gap-3">
         <Input
           placeholder="Filter by name..."
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
@@ -60,6 +78,42 @@ export function DataTable<TData extends RowData>({
             table.getColumn('name')?.setFilterValue(event.target.value)
           }
         />
+
+        {/* Visibility */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="outline" className="ml-auto" />}
+          >
+            Columns
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
+                      : column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Row Selection */}
+      <div className="text-muted-foreground flex-1 text-sm">
+        {table.getFilteredSelectedRowModel().rows.length} of{' '}
+        {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
 
       <div className="overflow-hidden rounded-md border">

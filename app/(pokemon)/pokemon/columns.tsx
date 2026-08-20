@@ -2,10 +2,11 @@
 
 import { DataTableFeatures } from '@/components/data-table-features';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Pokemon } from '@/lib/generated/prisma/client';
 
 import { createColumnHelper } from '@tanstack/react-table';
-import { ArrowUpDown, Pencil, Trash } from 'lucide-react';
+import { ArrowDown, ArrowUp, Pencil, Trash } from 'lucide-react';
 import Image from 'next/image';
 
 const columnHelper = createColumnHelper<DataTableFeatures, Pokemon>();
@@ -20,7 +21,11 @@ export const columns = columnHelper.columns([
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          {column.getIsSorted() === 'asc' ? (
+            <ArrowUp className="ml-2 h-4 w-4" />
+          ) : (
+            <ArrowDown className="ml-2 h-4 w-4" />
+          )}
         </Button>
       );
     },
@@ -50,6 +55,30 @@ export const columns = columnHelper.columns([
         />
       </div>
     ),
+  }),
+
+  // Row Selection
+  columnHelper.display({
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={
+          table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false, // hide it from the Visibility select option
   }),
 
   columnHelper.display({
