@@ -77,34 +77,36 @@ export default function PokemonForm() {
         return;
       }
 
+      const submitPromise = (async () => {
+        const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
+          fileName: image.name,
+          fileType: image.type,
+        });
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: image,
+          headers: {
+            'Content-Type': image.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Image upload failed');
+        }
+
+        return addPokemon({
+          imageUrl: publicUrl,
+          name: formValues.name,
+          description: formValues.description,
+        });
+      })(); // Start async work of submitting
+
       toast.promise(
-        async () => {
-          const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
-            fileName: image.name,
-            fileType: image.type,
-          });
-
-          const uploadResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: image,
-            headers: {
-              'Content-Type': image.type,
-            },
-          });
-
-          if (!uploadResponse.ok) {
-            throw new Error('Image upload failed');
-          }
-
-          return addPokemon({
-            imageUrl: publicUrl,
-            name: formValues.name,
-            description: formValues.description,
-          });
-        },
+        submitPromise, // Watch the async work of submitting
         {
           position: 'top-center',
-          loading: 'Uploading image',
+          loading: 'Collecting Pokemon...',
           success: (data) => {
             resetForm();
             return `Pokemon: ${data.name} created`;
@@ -112,6 +114,8 @@ export default function PokemonForm() {
           error: (e) => `Something went wrong ${e.message}`,
         },
       );
+
+      await submitPromise; // Watch the async work of submitting
     },
   });
 
@@ -279,9 +283,13 @@ export default function PokemonForm() {
           <Button type="button" variant="outline" onClick={resetForm}>
             Reset
           </Button>
-          <Button type="submit" form="pokemon-form">
-            Submit
-          </Button>
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
+              <Button type="submit" form="pokemon-form" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit'}
+              </Button>
+            )}
+          </form.Subscribe>
         </Field>
       </CardFooter>
     </Card>
