@@ -6,7 +6,7 @@ import { DataTable } from '@/components/data-table';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
 import { useCallback, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { usePokemonColumns } from './use-pokemon-columns';
+import { usePokemonColumns } from '../_hooks/use-pokemon-columns';
 
 export function PokemonTable({ pokemons }: { pokemons: Pokemon[] }) {
   const [pokemonToDelete, setPokemonToDelete] = useState<Pokemon | null>(null);

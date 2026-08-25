@@ -1,4 +1,4 @@
-import PokemonDataTable from './pokemon-data-table';
+import PokemonDataTable from './_components/pokemon-data-table';
 
 export default function Page() {
   return (
