@@ -18,6 +18,14 @@ export async function addPokemon(input: AddPokemonInput) {
   return pokemon;
 }
 
+export async function fetchPokemon(id: number) {
+  return await prisma.pokemon.findUnique({
+    where: {
+      id,
+    },
+  });
+}
+
 export async function listPokemons() {
   return await prisma.pokemon.findMany({
     orderBy: {

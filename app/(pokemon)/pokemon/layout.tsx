@@ -1,3 +1,8 @@
-export default function Layout({ children }: LayoutProps<'/pokemon'>) {
-  return <>{children}</>;
+export default function Layout({ children, modal }: LayoutProps<'/pokemon'>) {
+  return (
+    <>
+      {children}
+      {modal}
+    </>
+  );
 }
