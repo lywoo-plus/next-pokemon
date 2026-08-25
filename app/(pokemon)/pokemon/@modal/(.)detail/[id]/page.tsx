@@ -1,6 +1,6 @@
 import { fetchPokemon } from '@/actions/pokemon';
 import { notFound } from 'next/navigation';
-import PokemonDetailCard from '../_components/pokemon-detail-card';
+import PokemonDetailDialog from '../../../_components/pokemon-detail-dialog';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -20,5 +20,5 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  return <PokemonDetailCard pokemon={pokemon} />;
+  return <PokemonDetailDialog pokemon={pokemon} />;
 }

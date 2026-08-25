@@ -107,7 +107,7 @@ export function usePokemonColumns({
           cell: ({ row }) => (
             <div className="flex gap-2">
               <Link
-                href={`/pokemon/${row.original.id}`}
+                href={`/pokemon/detail/${row.original.id}`}
                 className={cn(
                   buttonVariants({ variant: 'secondary' }),
                   'text-blue-500',
@@ -118,7 +118,7 @@ export function usePokemonColumns({
               </Link>
 
               <Link
-                href={`/pokemon/${row.original.id}/edit`}
+                href={`/pokemon/detail/${row.original.id}/edit`}
                 className={cn(buttonVariants({ variant: 'secondary' }))}
                 aria-label={`Edit ${row.original.name}`}
               >
