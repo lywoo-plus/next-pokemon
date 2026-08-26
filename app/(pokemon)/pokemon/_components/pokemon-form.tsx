@@ -1,6 +1,6 @@
 'use client';
 
-import { addPokemon } from '@/actions/pokemon';
+import { addPokemon, updatePokemon } from '@/actions/pokemon';
 import { createPresignedS3UploadUrl } from '@/actions/s3';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import type { Pokemon } from '@/lib/generated/prisma/browser';
 import {
   pokemonFormSchema,
   type PokemonFormValues,
@@ -28,10 +29,19 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function PokemonForm() {
+function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
+  return {
+    image: null,
+    name: pokemon?.name ?? '',
+    description: pokemon?.description ?? '',
+  };
+}
+
+export default function PokemonForm({ value }: { value?: Pokemon }) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageInputKey, setImageInputKey] = useState(0);
   const imagePreviewUrlRef = useRef<string | null>(null);
+  const existingImageUrl = value?.imageUrl ?? null;
 
   function updateImagePreview(file: File | null) {
     if (imagePreviewUrlRef.current) {
@@ -58,11 +68,7 @@ export default function PokemonForm() {
   }, []);
 
   const form = useForm({
-    defaultValues: {
-      image: null,
-      name: '',
-      description: '',
-    } as PokemonFormValues,
+    defaultValues: getPokemonFormValues(value),
     validators: {
       onSubmit: pokemonFormSchema,
     },
@@ -70,7 +76,7 @@ export default function PokemonForm() {
       const formValues = values.value;
       const image = formValues.image;
 
-      if (!image) {
+      if (!image && !value) {
         toast.error('Please choose an image', {
           position: 'top-center',
         });
@@ -78,25 +84,39 @@ export default function PokemonForm() {
       }
 
       const submitPromise = (async () => {
-        const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
-          fileName: image.name,
-          fileType: image.type,
-        });
+        let imageUrl: string | undefined;
 
-        const uploadResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          body: image,
-          headers: {
-            'Content-Type': image.type,
-          },
-        });
+        if (image) {
+          const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
+            fileName: image.name,
+            fileType: image.type,
+          });
 
-        if (!uploadResponse.ok) {
-          throw new Error('Image upload failed');
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: image,
+            headers: {
+              'Content-Type': image.type,
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error('Image upload failed');
+          }
+
+          imageUrl = publicUrl;
+        }
+
+        if (value) {
+          return updatePokemon(value.id, {
+            ...(imageUrl ? { imageUrl } : {}),
+            name: formValues.name,
+            description: formValues.description,
+          });
         }
 
         return addPokemon({
-          imageUrl: publicUrl,
+          imageUrl: imageUrl!,
           name: formValues.name,
           description: formValues.description,
         });
@@ -109,7 +129,7 @@ export default function PokemonForm() {
           loading: 'Collecting Pokemon...',
           success: (data) => {
             resetForm();
-            return `Pokemon: ${data.name} created`;
+            return `Pokemon: ${data.name} ${value ? 'updated' : 'created'}`;
           },
           error: (e) => `Something went wrong ${e.message}`,
         },
@@ -120,10 +140,14 @@ export default function PokemonForm() {
   });
 
   function resetForm() {
-    form.reset();
+    form.reset(getPokemonFormValues(value));
     updateImagePreview(null);
     setImageInputKey((key) => key + 1);
   }
+
+  useEffect(() => {
+    resetForm();
+  }, [value?.id]);
 
   return (
     <Card className="md:w-sm">
@@ -144,6 +168,7 @@ export default function PokemonForm() {
             <form.Field name="image">
               {(field) => {
                 const selectedImage = field.state.value;
+                const displayedImageUrl = imagePreviewUrl ?? existingImageUrl;
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -156,16 +181,18 @@ export default function PokemonForm() {
                       htmlFor={`${field.name}-input`}
                       className="group border-input bg-muted/30 hover:bg-muted/50 has-[input:focus-visible]:ring-ring/50 relative grid aspect-square cursor-pointer place-items-center overflow-hidden rounded-lg border border-dashed transition-colors group-data-[invalid=true]:ring-3"
                     >
-                      {imagePreviewUrl ? (
+                      {displayedImageUrl ? (
                         <Image
-                          src={imagePreviewUrl}
+                          src={displayedImageUrl}
                           alt={
                             selectedImage
                               ? `Preview of ${selectedImage.name}`
-                              : 'Selected Pokemon'
+                              : value?.name
+                                ? value.name
+                                : 'Selected Pokemon'
                           }
                           fill
-                          unoptimized
+                          unoptimized={Boolean(imagePreviewUrl)}
                           sizes="(max-width: 640px) 100vw, 384px"
                           className="size-full object-cover"
                         />

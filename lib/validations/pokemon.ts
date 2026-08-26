@@ -18,5 +18,12 @@ export const addPokemonSchema = pokemonTextFieldsSchema
   })
   .strict();
 
+export const updatePokemonSchema = pokemonTextFieldsSchema
+  .extend({
+    imageUrl: z.string().min(1, 'Please choose an image').optional(),
+  })
+  .strict();
+
 export type PokemonFormValues = z.infer<typeof pokemonFormSchema>;
 export type AddPokemonInput = z.infer<typeof addPokemonSchema>;
+export type UpdatePokemonInput = z.infer<typeof updatePokemonSchema>;

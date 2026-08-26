@@ -5,6 +5,8 @@ import { prisma } from '@/db/prisma';
 import {
   addPokemonSchema,
   type AddPokemonInput,
+  updatePokemonSchema,
+  type UpdatePokemonInput,
 } from '@/lib/validations/pokemon';
 import { revalidatePath } from 'next/cache';
 
@@ -24,6 +26,22 @@ export async function fetchPokemon(id: number) {
       id,
     },
   });
+}
+
+export async function updatePokemon(id: number, input: UpdatePokemonInput) {
+  const data = updatePokemonSchema.parse(input);
+
+  const pokemon = await prisma.pokemon.update({
+    where: {
+      id,
+    },
+    data,
+  });
+
+  revalidatePath('/pokemon');
+  revalidatePath(`/pokemon/detail/${id}`);
+
+  return pokemon;
 }
 
 export async function listPokemons() {
