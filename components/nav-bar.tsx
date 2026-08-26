@@ -1,20 +1,10 @@
 'use client';
 
+import { NAV_LINKS } from '@/consts';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-const links = [
-  {
-    href: '/pokemon',
-    label: 'My Collection',
-  },
-  {
-    href: '/pokemon/new',
-    label: 'New',
-  },
-];
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -31,14 +21,19 @@ export default function NavBar() {
         <p className="text-xs capitalize">my pokemon collection</p>
       </Link>
 
-      <section className="flex items-center justify-center gap-4">
+      <section
+        className={cn(
+          'flex items-center justify-center gap-4',
+          pathname === '/' && 'hidden',
+        )}
+      >
         <ul className="flex gap-4">
-          {links.map((link) => (
+          {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={cn('p-4 hover:border-b-2', {
-                  'border-b-2': link.href === pathname,
+                className={cn('p-4 hover:border-b-2 hover:border-yellow-500', {
+                  'border-b-2 border-yellow-500': link.href === pathname,
                 })}
               >
                 {link.label}

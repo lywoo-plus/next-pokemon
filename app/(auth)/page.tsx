@@ -1,3 +1,9 @@
+import NavLinkFeatures from './_components/nav-link-features';
+
 export default function Page() {
-  return <div>login page</div>;
+  return (
+    <section>
+      <NavLinkFeatures />
+    </section>
+  );
 }
