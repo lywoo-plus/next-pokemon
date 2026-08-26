@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
+import { cn } from '@/lib/utils';
 import {
   pokemonFormSchema,
   type PokemonFormValues,
@@ -37,7 +38,13 @@ function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
   };
 }
 
-export default function PokemonForm({ value }: { value?: Pokemon }) {
+export default function PokemonForm({
+  value,
+  className,
+}: {
+  value?: Pokemon;
+  className?: string;
+}) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageInputKey, setImageInputKey] = useState(0);
   const imagePreviewUrlRef = useRef<string | null>(null);
@@ -150,7 +157,7 @@ export default function PokemonForm({ value }: { value?: Pokemon }) {
   }, [value?.id]);
 
   return (
-    <Card className="md:w-sm">
+    <Card className={cn('md:w-sm', className)}>
       <CardHeader>
         <CardTitle>Pokemon</CardTitle>
         <CardDescription>Who&apos;s that Pokemon?</CardDescription>

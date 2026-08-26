@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pokemon } from '@/lib/generated/prisma/browser';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -31,7 +25,6 @@ export default function PokemonDetailCard({
           </div>
         )}
         <CardTitle>{pokemon.name}</CardTitle>
-        <CardDescription>Pokemon #{pokemon.id}</CardDescription>
       </CardHeader>
 
       <CardContent>

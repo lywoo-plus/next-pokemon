@@ -6,11 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Pokemon } from '@/lib/generated/prisma/browser';
 import { useRouter } from 'next/navigation';
-import PokemonDetailCard from './pokemon-detail-card';
 
-export default function PokemonDetailDialog({ pokemon }: { pokemon: Pokemon }) {
+export default function PokemonDetailDialog({
+  id,
+  children,
+}: {
+  id: number;
+  children: React.ReactNode;
+}) {
   const router = useRouter();
 
   return (
@@ -24,10 +28,10 @@ export default function PokemonDetailDialog({ pokemon }: { pokemon: Pokemon }) {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Pokemon #{pokemon.id}</DialogTitle>
+          <DialogTitle>Pokemon #{id}</DialogTitle>
         </DialogHeader>
 
-        <PokemonDetailCard pokemon={pokemon} className="md:w-full" />
+        {children}
       </DialogContent>
     </Dialog>
   );

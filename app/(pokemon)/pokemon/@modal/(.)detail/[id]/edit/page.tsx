@@ -1,7 +1,7 @@
 import { fetchPokemon } from '@/actions/pokemon';
+import PokemonDetailDialog from '@/app/(pokemon)/pokemon/_components/pokemon-detail-dialog';
+import PokemonForm from '@/app/(pokemon)/pokemon/_components/pokemon-form';
 import { notFound } from 'next/navigation';
-import PokemonDetailCard from '../../../_components/pokemon-detail-card';
-import PokemonDetailDialog from '../../../_components/pokemon-detail-dialog';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -23,7 +23,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <PokemonDetailDialog id={pokemon.id}>
-      <PokemonDetailCard pokemon={pokemon} className="bg-slate-50 md:w-full" />
+      <PokemonForm value={pokemon} className="bg-slate-50 md:w-full" />
     </PokemonDetailDialog>
   );
 }
