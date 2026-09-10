@@ -4,8 +4,8 @@ import { deleteS3ObjectByPublicUrl } from '@/actions/s3';
 import { prisma } from '@/db/prisma';
 import {
   addPokemonSchema,
-  type AddPokemonInput,
   updatePokemonSchema,
+  type AddPokemonInput,
   type UpdatePokemonInput,
 } from '@/lib/validations/pokemon';
 import { revalidatePath } from 'next/cache';
@@ -45,6 +45,10 @@ export async function updatePokemon(id: number, input: UpdatePokemonInput) {
 }
 
 export async function listPokemons() {
+  await new Promise((resolve) => {
+    setTimeout(() => resolve(null), 50);
+  });
+
   return await prisma.pokemon.findMany({
     orderBy: {
       createdAt: 'desc',
