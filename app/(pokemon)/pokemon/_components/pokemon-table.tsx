@@ -4,11 +4,13 @@ import { deletePokemon } from '@/actions/pokemon';
 import { AlertDialogDestructive } from '@/components/alert-dialog-destructive';
 import { DataTable } from '@/components/data-table';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { usePokemonColumns } from '../_hooks/use-pokemon-columns';
 
 export function PokemonTable({ pokemons }: { pokemons: Pokemon[] }) {
+  const queryClient = useQueryClient();
   const [pokemonToDelete, setPokemonToDelete] = useState<Pokemon | null>(null);
 
   const [isDeleting, startDeleting] = useTransition();
@@ -35,6 +37,7 @@ export function PokemonTable({ pokemons }: { pokemons: Pokemon[] }) {
     startDeleting(async () => {
       try {
         await deletePokemon(pokemon.id);
+        await queryClient.invalidateQueries({ queryKey: ['pokemons'] });
         setIsDeleteDialogOpen(false);
         toast.success(`${pokemon.name} deleted`);
       } catch (error) {

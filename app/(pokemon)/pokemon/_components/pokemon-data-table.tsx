@@ -1,8 +1,20 @@
+'use client';
+
 import { listPokemons } from '@/actions/pokemon';
+import { QueryState } from '@/components/query-state';
+import { useQuery } from '@tanstack/react-query';
 import { PokemonTable } from './pokemon-table';
 
-export default async function PokemonDataTable() {
-  const pokemons = await listPokemons();
+export default function PokemonDataTable() {
+  const pokemonQuery = useQuery({
+    queryKey: ['pokemons'],
+    queryFn: listPokemons,
+    staleTime: 60 * 1000,
+  });
 
-  return <PokemonTable pokemons={pokemons} />;
+  return (
+    <QueryState query={pokemonQuery} errorMessage="Failed to fetch Pokemon">
+      {(pokemons) => <PokemonTable pokemons={pokemons} />}
+    </QueryState>
+  );
 }

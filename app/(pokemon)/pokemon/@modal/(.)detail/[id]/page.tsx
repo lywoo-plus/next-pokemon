@@ -1,4 +1,3 @@
-import { fetchPokemon } from '@/actions/pokemon';
 import { notFound } from 'next/navigation';
 import PokemonDetailCard from '../../../_components/pokemon-detail-card';
 import PokemonDetailDialog from '../../../_components/pokemon-detail-dialog';
@@ -15,15 +14,12 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const pokemon = await fetchPokemon(pokemonId);
-
-  if (!pokemon) {
-    notFound();
-  }
-
   return (
-    <PokemonDetailDialog id={pokemon.id}>
-      <PokemonDetailCard pokemon={pokemon} className="bg-slate-50 md:w-full" />
+    <PokemonDetailDialog id={pokemonId}>
+      <PokemonDetailCard
+        pokemonId={pokemonId}
+        className="bg-slate-50 md:w-full"
+      />
     </PokemonDetailDialog>
   );
 }

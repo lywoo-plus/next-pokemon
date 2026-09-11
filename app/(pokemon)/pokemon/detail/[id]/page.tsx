@@ -1,4 +1,3 @@
-import { fetchPokemon } from '@/actions/pokemon';
 import { notFound } from 'next/navigation';
 import PokemonDetailCard from '../../_components/pokemon-detail-card';
 
@@ -14,11 +13,5 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const pokemon = await fetchPokemon(pokemonId);
-
-  if (!pokemon) {
-    notFound();
-  }
-
-  return <PokemonDetailCard pokemon={pokemon} />;
+  return <PokemonDetailCard pokemonId={pokemonId} />;
 }

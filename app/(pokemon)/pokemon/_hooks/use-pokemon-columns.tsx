@@ -10,7 +10,6 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, Eye, Pencil, Trash2Icon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 const columnHelper = createColumnHelper<DataTableFeatures, Pokemon>();
@@ -22,8 +21,6 @@ export function usePokemonColumns({
   isDeleting: boolean;
   onDelete: (pokemon: Pokemon) => void;
 }) {
-  const router = useRouter();
-
   return useMemo(
     () =>
       columnHelper.columns([
@@ -62,7 +59,7 @@ export function usePokemonColumns({
         columnHelper.accessor('imageUrl', {
           header: 'Image',
           cell: ({ row }) => (
-            <div className="size-[80px] border">
+            <div className="size-20 border">
               <Image
                 src={row.original.imageUrl || '/'}
                 width={80}

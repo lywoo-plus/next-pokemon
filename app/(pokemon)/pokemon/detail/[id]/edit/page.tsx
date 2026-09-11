@@ -1,4 +1,3 @@
-import { fetchPokemon } from '@/actions/pokemon';
 import { notFound } from 'next/navigation';
 import PokemonForm from '../../../_components/pokemon-form';
 
@@ -14,11 +13,5 @@ export default async function Page({ params }: PageProps) {
     notFound();
   }
 
-  const pokemon = await fetchPokemon(pokemonId);
-
-  if (!pokemon) {
-    notFound();
-  }
-
-  return <PokemonForm value={pokemon} />;
+  return <PokemonForm pokemonId={pokemonId} />;
 }

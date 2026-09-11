@@ -1,7 +1,8 @@
 'use client';
 
-import { addPokemon, updatePokemon } from '@/actions/pokemon';
+import { addPokemon, fetchPokemon, updatePokemon } from '@/actions/pokemon';
 import { createPresignedS3UploadUrl } from '@/actions/s3';
+import { QueryState } from '@/components/query-state';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,6 +26,7 @@ import {
   type PokemonFormValues,
 } from '@/lib/validations/pokemon';
 import { useForm } from '@tanstack/react-form';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImagePlusIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
@@ -39,12 +41,41 @@ function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
 }
 
 export default function PokemonForm({
+  pokemonId,
+  className,
+}: {
+  pokemonId?: number;
+  className?: string;
+}) {
+  const pokemonQuery = useQuery({
+    queryKey: ['pokemon', pokemonId],
+    queryFn: () => fetchPokemon(pokemonId!),
+    enabled: pokemonId != null,
+  });
+
+  if (pokemonId == null) {
+    return <PokemonFormFields className={className} />;
+  }
+
+  return (
+    <QueryState
+      query={pokemonQuery}
+      errorMessage="Failed to fetch Pokemon"
+      empty={<p className="text-muted-foreground text-sm">Pokemon not found</p>}
+    >
+      {(pokemon) => <PokemonFormFields value={pokemon} className={className} />}
+    </QueryState>
+  );
+}
+
+function PokemonFormFields({
   value,
   className,
 }: {
   value?: Pokemon;
   className?: string;
 }) {
+  const queryClient = useQueryClient();
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [imageInputKey, setImageInputKey] = useState(0);
   const imagePreviewUrlRef = useRef<string | null>(null);
@@ -142,7 +173,15 @@ export default function PokemonForm({
         },
       );
 
-      await submitPromise; // Watch the async work of submitting
+      const savedPokemon = await submitPromise; // Watch the async work of submitting
+
+      await queryClient.invalidateQueries({ queryKey: ['pokemons'] });
+
+      if (value) {
+        await queryClient.invalidateQueries({
+          queryKey: ['pokemon', savedPokemon.id],
+        });
+      }
     },
   });
 
