@@ -1,10 +1,10 @@
 'use client';
 
-import { NAV_LINKS } from '@/consts';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { NAV_LINKS } from '../constants';
 
-export default function NavLinkFeatures() {
+export default function AuthNavLinks() {
   return (
     <nav className="flex items-center justify-center gap-4">
       <ul className="flex gap-4">

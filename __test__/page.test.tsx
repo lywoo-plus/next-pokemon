@@ -3,7 +3,7 @@
 import {
   addPokemonSchema,
   updatePokemonSchema,
-} from '@/lib/validations/pokemon';
+} from '@/features/pokemon/schemas';
 
 describe('pokemon validation', () => {
   it('accepts a valid pokemon payload', () => {

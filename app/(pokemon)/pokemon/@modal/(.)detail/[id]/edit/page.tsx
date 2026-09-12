@@ -1,5 +1,5 @@
-import PokemonDetailDialog from '@/app/(pokemon)/pokemon/_components/pokemon-detail-dialog';
-import PokemonForm from '@/app/(pokemon)/pokemon/_components/pokemon-form';
+import PokemonDetailDialog from '@/features/pokemon/components/pokemon-detail-dialog';
+import PokemonForm from '@/features/pokemon/components/pokemon-form';
 import { notFound } from 'next/navigation';
 
 interface PageProps {

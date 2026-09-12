@@ -1,6 +1,6 @@
 'use client';
 
-import { DataTableFeatures } from '@/components/data-table-features';
+import { DataTableFeatures } from '@/components/data-table-config';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Pokemon } from '@/lib/generated/prisma/browser';

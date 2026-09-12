@@ -1,11 +1,11 @@
 'use client';
 
-import { fetchPokemon } from '@/actions/pokemon';
 import { QueryState } from '@/components/query-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
+import { findPokemon } from '../actions';
 
 export default function PokemonDetailCard({
   pokemonId,
@@ -16,7 +16,7 @@ export default function PokemonDetailCard({
 }) {
   const pokemonQuery = useQuery({
     queryKey: ['pokemon', pokemonId],
-    queryFn: () => fetchPokemon(pokemonId),
+    queryFn: () => findPokemon(pokemonId),
     staleTime: 60_000, // cached data be considered fresh for 60 seconds
   });
 

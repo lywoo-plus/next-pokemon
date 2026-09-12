@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 
 import { useState } from 'react';
-import { features, type DataTableFeatures } from './data-table-features';
+import { features, type DataTableFeatures } from './data-table-config';
 import { Button } from './ui/button';
 import {
   DropdownMenu,

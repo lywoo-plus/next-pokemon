@@ -1,6 +1,6 @@
+import PokemonDetailCard from '@/features/pokemon/components/pokemon-detail-card';
+import PokemonDetailDialog from '@/features/pokemon/components/pokemon-detail-dialog';
 import { notFound } from 'next/navigation';
-import PokemonDetailCard from '../../../_components/pokemon-detail-card';
-import PokemonDetailDialog from '../../../_components/pokemon-detail-dialog';
 
 interface PageProps {
   params: Promise<{ id: string }>;

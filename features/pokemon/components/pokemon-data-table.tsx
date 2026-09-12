@@ -1,8 +1,8 @@
 'use client';
 
-import { listPokemons } from '@/actions/pokemon';
 import { QueryState } from '@/components/query-state';
 import { useQuery } from '@tanstack/react-query';
+import { listPokemons } from '../actions';
 import { PokemonTable } from './pokemon-table';
 
 export default function PokemonDataTable() {

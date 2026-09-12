@@ -1,5 +1,5 @@
+import PokemonForm from '@/features/pokemon/components/pokemon-form';
 import { notFound } from 'next/navigation';
-import PokemonForm from '../../../_components/pokemon-form';
 
 interface PageProps {
   params: Promise<{ id: string }>;

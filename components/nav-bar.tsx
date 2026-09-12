@@ -1,8 +1,8 @@
 'use client';
 
 import { Button, buttonVariants } from '@/components/ui/button';
-import { NAV_LINKS } from '@/consts';
-import { signOut, useSession } from '@/lib/auth-client';
+import { signOut, useSession } from '@/features/auth/auth-client';
+import { NAV_LINKS } from '@/features/auth/constants';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';

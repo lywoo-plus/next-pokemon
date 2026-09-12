@@ -1,7 +1,6 @@
 'use client';
 
-import { addPokemon, fetchPokemon, updatePokemon } from '@/actions/pokemon';
-import { createPresignedS3UploadUrl } from '@/actions/s3';
+import { createPresignedS3UploadUrl } from '@/integrations/s3';
 import { QueryState } from '@/components/query-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,16 +20,14 @@ import {
 import { Input } from '@/components/ui/input';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
 import { cn } from '@/lib/utils';
-import {
-  pokemonFormSchema,
-  type PokemonFormValues,
-} from '@/lib/validations/pokemon';
 import { useForm } from '@tanstack/react-form';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImagePlusIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { createPokemon, findPokemon, updatePokemon } from '../actions';
+import { pokemonFormSchema, type PokemonFormValues } from '../schemas';
 
 function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
   return {
@@ -49,7 +46,7 @@ export default function PokemonForm({
 }) {
   const pokemonQuery = useQuery({
     queryKey: ['pokemon', pokemonId],
-    queryFn: () => fetchPokemon(pokemonId!),
+    queryFn: () => findPokemon(pokemonId!),
     enabled: pokemonId != null,
   });
 
@@ -80,8 +77,9 @@ function PokemonFormFields({
   const [imageInputKey, setImageInputKey] = useState(0);
   const imagePreviewUrlRef = useRef<string | null>(null);
   const existingImageUrl = value?.imageUrl ?? null;
+  const defaultFormValues = useMemo(() => getPokemonFormValues(value), [value]);
 
-  function updateImagePreview(file: File | null) {
+  const updateImagePreview = useCallback((file: File | null) => {
     if (imagePreviewUrlRef.current) {
       URL.revokeObjectURL(imagePreviewUrlRef.current);
       imagePreviewUrlRef.current = null;
@@ -95,7 +93,7 @@ function PokemonFormFields({
     const previewUrl = URL.createObjectURL(file);
     imagePreviewUrlRef.current = previewUrl;
     setImagePreviewUrl(previewUrl);
-  }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -106,7 +104,7 @@ function PokemonFormFields({
   }, []);
 
   const form = useForm({
-    defaultValues: getPokemonFormValues(value),
+    defaultValues: defaultFormValues,
     validators: {
       onSubmit: pokemonFormSchema,
     },
@@ -153,7 +151,7 @@ function PokemonFormFields({
           });
         }
 
-        return addPokemon({
+        return createPokemon({
           imageUrl: imageUrl!,
           name: formValues.name,
           description: formValues.description,
@@ -185,15 +183,15 @@ function PokemonFormFields({
     },
   });
 
-  function resetForm() {
-    form.reset(getPokemonFormValues(value));
+  const resetForm = useCallback(() => {
+    form.reset(defaultFormValues);
     updateImagePreview(null);
     setImageInputKey((key) => key + 1);
-  }
+  }, [defaultFormValues, form, updateImagePreview]);
 
   useEffect(() => {
     resetForm();
-  }, [value?.id]);
+  }, [resetForm]);
 
   return (
     <Card className={cn('md:w-sm', className)}>

@@ -1,12 +1,6 @@
 'use client';
 
-import { signIn, signUp } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
-import {
-  signInAuthFormSchema,
-  signUpAuthFormSchema,
-  type AuthFormValues,
-} from '@/lib/validations/auth';
 import { useForm } from '@tanstack/react-form';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -29,6 +23,12 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { signIn, signUp } from '../auth-client';
+import {
+  signInAuthFormSchema,
+  signUpAuthFormSchema,
+  type AuthFormValues,
+} from '../schemas';
 
 type AuthMode = 'sign-in' | 'sign-up';
 
