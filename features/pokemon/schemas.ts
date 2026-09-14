@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+export const pokemonIdSchema = z.number().int().positive();
+
 const pokemonTextFieldsSchema = z.object({
   name: z.string().min(1, 'Please enter a name'),
   description: z.string().min(1, 'Please enter a description'),
@@ -23,6 +25,10 @@ export const updatePokemonSchema = pokemonTextFieldsSchema
     imageUrl: z.string().min(1, 'Please choose an image').optional(),
   })
   .strict();
+
+export const updatePokemonActionSchema = updatePokemonSchema.extend({
+  id: pokemonIdSchema,
+});
 
 export type PokemonFormValues = z.infer<typeof pokemonFormSchema>;
 export type AddPokemonInput = z.infer<typeof addPokemonSchema>;

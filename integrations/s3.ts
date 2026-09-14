@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import {
   DeleteObjectCommand,
@@ -52,14 +52,10 @@ function getS3KeyFromPublicUrl(publicUrl: string) {
   return decodeURIComponent(url.pathname.replace(/^\/+/, ''));
 }
 
-export async function createPresignedS3UploadUrl(input: {
+export async function createPresignedS3UploadUrlData(input: {
   fileName: string;
   fileType: string;
 }) {
-  if (!input.fileType.startsWith('image/')) {
-    throw new Error('Only image uploads are allowed');
-  }
-
   const { bucket, region } = requireS3Config();
   const safeFileName = createSafeFileName(input.fileName) || 'image';
   const key = `pokemon/${crypto.randomUUID()}-${safeFileName}`;

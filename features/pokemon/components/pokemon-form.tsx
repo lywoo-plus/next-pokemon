@@ -1,6 +1,5 @@
 'use client';
 
-import { createPresignedS3UploadUrl } from '@/integrations/s3';
 import { QueryState } from '@/components/query-state';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +17,7 @@ import {
   FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { runSafeAction } from '@/features/auth/action-result';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
 import { cn } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
@@ -26,7 +26,12 @@ import { ImagePlusIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { createPokemon, findPokemon, updatePokemon } from '../actions';
+import {
+  createPokemon,
+  createPresignedS3UploadUrl,
+  findPokemon,
+  updatePokemon,
+} from '../actions';
 import { pokemonFormSchema, type PokemonFormValues } from '../schemas';
 
 function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
@@ -46,7 +51,7 @@ export default function PokemonForm({
 }) {
   const pokemonQuery = useQuery({
     queryKey: ['pokemon', pokemonId],
-    queryFn: () => findPokemon(pokemonId!),
+    queryFn: () => runSafeAction(findPokemon, pokemonId!),
     enabled: pokemonId != null,
   });
 
@@ -123,10 +128,13 @@ function PokemonFormFields({
         let imageUrl: string | undefined;
 
         if (image) {
-          const { uploadUrl, publicUrl } = await createPresignedS3UploadUrl({
-            fileName: image.name,
-            fileType: image.type,
-          });
+          const { uploadUrl, publicUrl } = await runSafeAction(
+            createPresignedS3UploadUrl,
+            {
+              fileName: image.name,
+              fileType: image.type,
+            },
+          );
 
           const uploadResponse = await fetch(uploadUrl, {
             method: 'PUT',
@@ -144,18 +152,25 @@ function PokemonFormFields({
         }
 
         if (value) {
-          return updatePokemon(value.id, {
-            ...(imageUrl ? { imageUrl } : {}),
-            name: formValues.name,
-            description: formValues.description,
-          });
+          return runSafeAction(
+            updatePokemon,
+            {
+              id: value.id,
+              ...(imageUrl ? { imageUrl } : {}),
+              name: formValues.name,
+              description: formValues.description,
+            },
+          );
         }
 
-        return createPokemon({
-          imageUrl: imageUrl!,
-          name: formValues.name,
-          description: formValues.description,
-        });
+        return runSafeAction(
+          createPokemon,
+          {
+            imageUrl: imageUrl!,
+            name: formValues.name,
+            description: formValues.description,
+          },
+        );
       })(); // Start async work of submitting
 
       toast.promise(

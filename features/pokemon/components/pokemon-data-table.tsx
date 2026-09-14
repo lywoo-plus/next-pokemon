@@ -1,6 +1,7 @@
 'use client';
 
 import { QueryState } from '@/components/query-state';
+import { runSafeAction } from '@/features/auth/action-result';
 import { useQuery } from '@tanstack/react-query';
 import { listPokemons } from '../actions';
 import { PokemonTable } from './pokemon-table';
@@ -8,7 +9,7 @@ import { PokemonTable } from './pokemon-table';
 export default function PokemonDataTable() {
   const pokemonQuery = useQuery({
     queryKey: ['pokemons'],
-    queryFn: listPokemons,
+    queryFn: () => runSafeAction(listPokemons),
     staleTime: 60 * 1000,
   });
 

@@ -2,6 +2,7 @@
 
 import { AlertDialogDestructive } from '@/components/alert-dialog-destructive';
 import { DataTable } from '@/components/data-table';
+import { runSafeAction } from '@/features/auth/action-result';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState, useTransition } from 'react';
@@ -36,7 +37,7 @@ export function PokemonTable({ pokemons }: { pokemons: Pokemon[] }) {
 
     startDeleting(async () => {
       try {
-        await deletePokemon(pokemon.id);
+        await runSafeAction(deletePokemon, pokemon.id);
         await queryClient.invalidateQueries({ queryKey: ['pokemons'] });
         await queryClient.invalidateQueries({
           queryKey: ['pokemon', pokemon.id],

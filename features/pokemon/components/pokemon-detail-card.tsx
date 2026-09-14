@@ -2,6 +2,7 @@
 
 import { QueryState } from '@/components/query-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { runSafeAction } from '@/features/auth/action-result';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
@@ -16,7 +17,7 @@ export default function PokemonDetailCard({
 }) {
   const pokemonQuery = useQuery({
     queryKey: ['pokemon', pokemonId],
-    queryFn: () => findPokemon(pokemonId),
+    queryFn: () => runSafeAction(findPokemon, pokemonId),
     staleTime: 60_000, // cached data be considered fresh for 60 seconds
   });
 
