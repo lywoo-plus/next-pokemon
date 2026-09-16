@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next Pokemon
 
-## Getting Started
+A Next.js Pokemon collection app with authentication, image uploads, and CRUD flows for managing Pokemon records.
 
-First, run the development server:
+![Next Pokemon screenshot](docs/screenshot.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- Prisma ORM with PostgreSQL
+- Better Auth
+- TanStack Query, TanStack Form, and TanStack Table
+- shadcn/ui components
+- AWS S3 presigned uploads
+
+## Requirements
+
+- Node.js
+- pnpm
+- PostgreSQL database
+- AWS S3 bucket for Pokemon image uploads
+
+## Environment Variables
+
+Create a `.env` file in the project root with these variables:
+
+```env
+DATABASE_URL=
+
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:3000
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_S3_BUCKET=
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Do not commit real `.env` values.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Install dependencies:
 
-## Learn More
+```bash
+pnpm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Generate the Prisma client:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm prisma generate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Apply database migrations:
 
-## Deploy on Vercel
+```bash
+pnpm prisma migrate dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Start the development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Available Scripts
+
+```bash
+pnpm dev
+pnpm build
+pnpm start
+pnpm lint
+pnpm lint:fix
+pnpm format
+pnpm format:check
+pnpm test
+pnpm test:watch
+```
+
+## App Flow
+
+1. Create an account or log in.
+2. Open the Pokemon collection page.
+3. Add a Pokemon with a name, description, and image.
+4. View, edit, or manage Pokemon records from the table.
+
+## Notes
+
+- Pokemon images are uploaded through presigned S3 URLs.
+- The Pokemon routes are protected and redirect unauthenticated users to the auth page.
+- React Query caches Pokemon reads; mutations invalidate Pokemon queries after writes.
