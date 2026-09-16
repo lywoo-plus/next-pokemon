@@ -7,11 +7,20 @@ const pokemonTextFieldsSchema = z.object({
   description: z.string().min(1, 'Please enter a description'),
 });
 
+const pokemonImageSchema = z
+  .file('Please choose an image')
+  .refine((file) => file.type.startsWith('image/'), 'Please choose an image');
+
+const requiredPokemonImageSchema = z
+  .union([pokemonImageSchema, z.null()])
+  .refine((file): file is File => file != null, 'Please choose an image');
+
 export const pokemonFormSchema = pokemonTextFieldsSchema.extend({
-  image: z
-    .file()
-    .refine((file) => file.type.startsWith('image/'), 'Please choose an image')
-    .nullable(),
+  image: requiredPokemonImageSchema,
+});
+
+export const updatePokemonFormSchema = pokemonTextFieldsSchema.extend({
+  image: pokemonImageSchema.nullable(),
 });
 
 export const addPokemonSchema = pokemonTextFieldsSchema
@@ -30,6 +39,6 @@ export const updatePokemonActionSchema = updatePokemonSchema.extend({
   id: pokemonIdSchema,
 });
 
-export type PokemonFormValues = z.infer<typeof pokemonFormSchema>;
+export type PokemonFormValues = z.infer<typeof updatePokemonFormSchema>;
 export type AddPokemonInput = z.infer<typeof addPokemonSchema>;
 export type UpdatePokemonInput = z.infer<typeof updatePokemonSchema>;
