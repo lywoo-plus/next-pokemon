@@ -21,7 +21,7 @@ import { runSafeAction } from '@/features/auth/action-result';
 import type { Pokemon } from '@/lib/generated/prisma/browser';
 import { cn } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ImagePlusIcon, XIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -32,7 +32,11 @@ import {
   findPokemon,
   updatePokemon,
 } from '../actions';
-import { pokemonFormSchema, type PokemonFormValues } from '../schemas';
+import {
+  pokemonFormSchema,
+  type PokemonFormValues,
+  updatePokemonFormSchema,
+} from '../schemas';
 
 function getPokemonFormValues(pokemon?: Pokemon): PokemonFormValues {
   return {
@@ -83,6 +87,68 @@ function PokemonFormFields({
   const imagePreviewUrlRef = useRef<string | null>(null);
   const existingImageUrl = value?.imageUrl ?? null;
   const defaultFormValues = useMemo(() => getPokemonFormValues(value), [value]);
+  const submitValidator = value ? updatePokemonFormSchema : pokemonFormSchema;
+
+  const savePokemonMutation = useMutation({
+    mutationFn: async (formValues: PokemonFormValues) => {
+      const image = formValues.image;
+      let imageUrl: string | undefined;
+
+      if (image) {
+        const { uploadUrl, publicUrl } = await runSafeAction(
+          createPresignedS3UploadUrl,
+          {
+            fileName: image.name,
+            fileType: image.type,
+          },
+        );
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: image,
+          headers: {
+            'Content-Type': image.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Image upload failed');
+        }
+
+        imageUrl = publicUrl;
+      }
+
+      if (value) {
+        return runSafeAction(updatePokemon, {
+          id: value.id,
+          ...(imageUrl ? { imageUrl } : {}),
+          name: formValues.name,
+          description: formValues.description,
+        });
+      }
+
+      if (!imageUrl) {
+        throw new Error('Please choose an image');
+      }
+
+      return runSafeAction(createPokemon, {
+        imageUrl,
+        name: formValues.name,
+        description: formValues.description,
+      });
+    },
+    onSuccess: async (savedPokemon) => {
+      resetForm();
+
+      await queryClient.invalidateQueries({ queryKey: ['pokemons'] });
+
+      if (value) {
+        await queryClient.invalidateQueries({
+          queryKey: ['pokemon', savedPokemon.id],
+        });
+      }
+    },
+  });
 
   const updateImagePreview = useCallback((file: File | null) => {
     if (imagePreviewUrlRef.current) {
@@ -111,90 +177,23 @@ function PokemonFormFields({
   const form = useForm({
     defaultValues: defaultFormValues,
     validators: {
-      onSubmit: pokemonFormSchema,
+      onSubmit: submitValidator as never,
     },
     onSubmit: async (values) => {
       const formValues = values.value;
-      const image = formValues.image;
 
-      if (!image && !value) {
-        toast.error('Please choose an image', {
-          position: 'top-center',
-        });
-        return;
-      }
+      const submitPromise = savePokemonMutation.mutateAsync(formValues);
 
-      const submitPromise = (async () => {
-        let imageUrl: string | undefined;
-
-        if (image) {
-          const { uploadUrl, publicUrl } = await runSafeAction(
-            createPresignedS3UploadUrl,
-            {
-              fileName: image.name,
-              fileType: image.type,
-            },
-          );
-
-          const uploadResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: image,
-            headers: {
-              'Content-Type': image.type,
-            },
-          });
-
-          if (!uploadResponse.ok) {
-            throw new Error('Image upload failed');
-          }
-
-          imageUrl = publicUrl;
-        }
-
-        if (value) {
-          return runSafeAction(
-            updatePokemon,
-            {
-              id: value.id,
-              ...(imageUrl ? { imageUrl } : {}),
-              name: formValues.name,
-              description: formValues.description,
-            },
-          );
-        }
-
-        return runSafeAction(
-          createPokemon,
-          {
-            imageUrl: imageUrl!,
-            name: formValues.name,
-            description: formValues.description,
-          },
-        );
-      })(); // Start async work of submitting
-
-      toast.promise(
-        submitPromise, // Watch the async work of submitting
-        {
-          position: 'top-center',
-          loading: 'Collecting Pokemon...',
-          success: (data) => {
-            resetForm();
-            return `Pokemon: ${data.name} ${value ? 'updated' : 'created'}`;
-          },
-          error: (e) => `Something went wrong ${e.message}`,
+      toast.promise(submitPromise, {
+        position: 'top-center',
+        loading: 'Collecting Pokemon...',
+        success: (data) => {
+          return `Pokemon: ${data.name} ${value ? 'updated' : 'created'}`;
         },
-      );
+        error: (e) => `Something went wrong ${e.message}`,
+      });
 
-      const savedPokemon = await submitPromise; // Watch the async work of submitting
-
-      await queryClient.invalidateQueries({ queryKey: ['pokemons'] });
-
-      if (value) {
-        await queryClient.invalidateQueries({
-          queryKey: ['pokemon', savedPokemon.id],
-        });
-      }
+      await submitPromise;
     },
   });
 
